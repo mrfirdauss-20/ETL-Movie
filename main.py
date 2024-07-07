@@ -1,6 +1,7 @@
 import csv
 import psycopg2
 import re
+from tqdm import tqdm
 
 conn = psycopg2.connect(
         dbname='etl',
@@ -11,73 +12,47 @@ conn = psycopg2.connect(
     )
 cursor = conn.cursor()
 
-def read_csv_to_dict(filename):
-    with open(filename, mode='r') as file:
-        csv_reader = csv.DictReader(file)
-        list_of_dicts = [row for row in csv_reader]
-    return list_of_dicts
+def extract_year(X):
+    start = None
+    end = None
+    years = re.findall(r'\b\d+\b', X)
 
-def remove_parentheses_replace(text):
-    text = text.replace('(', '')
-    text = text.replace(')', '')
-    return text
-# Replace 'data.csv' with your file name
-filename = 'movies.csv'
-data = read_csv_to_dict(filename)
+    if '–' in X:
+        start = (years[0])
+        end = years[1] if len(years)>1 else None
+    elif X != '':
+        end = years[0] if len(years)>0 else None
+    return start, end
 
-for dantum in data:
-    if dantum['YEAR'] == '':
-        dantum['year_start'] = None
-        dantum['year_end'] = None
-    elif '–' in dantum['YEAR']:
-        years = re.findall(r'\b\d+\b', dantum['YEAR'])
-        dantum['year_start'] = (years[0])
-        dantum['year_end'] = years[1] if len(years)>1 else None
-    else:
-        dantum['year_start'] = None
-        year = re.findall(r'\b\d+\b', dantum['YEAR'])
-        dantum['year_end'] = year[0] if len(year)>0 else None
+def extract_director(X):
+    stars = None
+    director = None
+    if 'Director:' in X and 'Stars:' in X:
+        stars = X.split('|')
+        director = stars[0][:-1].split(':\n')[1].split(', \n')
+        stars = stars[1][:-1].split(':\n')[1].split(', \n')
+    elif 'Director:' in X:
+        director = X[:-1].split(':\n')[1].split(', \n')
+    elif 'Stars:' in X:
+        stars = X[:-1].split(':\n')[1].split(', \n')
+    return director, stars
 
-    if 'Director:' in dantum['STARS'] and 'Stars:' in dantum['STARS']:
-        stars = dantum['STARS'].split('|')
-        dantum['DIRECTOR'] = stars[0][:-1].split(':\n')[1].split(', \n')
-        dantum['STARS'] = stars[1][:-1].split(':\n')[1].split(', \n')
-    elif 'Director:' in dantum['STARS']:
-        dantum['DIRECTOR'] = dantum['STARS'][:-1].split(':\n')[1].split(', \n')
-        dantum['STARS'] = None
-    elif 'Stars:' in dantum['STARS']:
-        dantum['STARS'] = dantum['STARS'][:-1].split(':\n')[1].split(', \n')
-        dantum['DIRECTOR'] = None
-    else:
-        dantum['STARS'] = None
-        dantum['DIRECTOR'] = None
+def load_data(dantum):
+    dantum['year_start'], dantum['year_end'] = extract_year(dantum['YEAR'])
+    dantum['DIRECTOR'], dantum['STARS'] = extract_director(dantum['STARS'])    
+
     dantum['ONE-LINE'] = dantum['ONE-LINE'][1:] if dantum['ONE-LINE'] != '' else None
     dantum['Gross'] = float(dantum['Gross'].replace('$', '').replace('M','')) if dantum['Gross'] != '' else None
     dantum['VOTES'] = int(dantum['VOTES'].replace(',', '')) if dantum['VOTES'] != '' else None
     dantum['GENRE'] = dantum['GENRE'][1:].split(', ') if dantum['GENRE']!= '' else None
     dantum['RATING'] = float(dantum['RATING']) if dantum['RATING'] != '' else None
     dantum['RunTime'] = int(dantum['RunTime']) if dantum['RunTime'] != '' else None
-#     CREATE TABLE movies (
-#   id integer PRIMARY KEY,
-#   name varchar,
-#   run_time int,
-#   plot varchar,
-#   rating real,
-#   start_year integer,
-#   end_year integer
-# );
+
     queryMovie = "INSERT INTO movies (name, run_time, plot, rating, start_year, end_year) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
 
     cursor.execute(queryMovie, (dantum['MOVIES'], dantum['RunTime'], dantum['ONE-LINE'], dantum['RATING'], dantum['year_start'], dantum['year_end']))
     movie_id = cursor.fetchone()[0]
 
-    #     CREATE TABLE stars (
-    #   id SERIAL PRIMARY KEY,
-    #   name varchar(64)
-    # );
-
-    #select all stars from table, if results length != array, insert the nonexist stars into table stars
-    #insert  the relation between movies_stars
     if dantum['STARS']:
         for star in dantum['STARS']:
             queryStar = "SELECT id FROM stars WHERE name = %s"
@@ -123,6 +98,12 @@ for dantum in data:
     cursor.execute(queryAnalysis, (movie_id, (dantum['Gross'])))
     conn.commit()
 
+filename = 'movies.csv'
+
+with open(filename, mode='r') as file:
+    csv_reader = csv.DictReader(file)
+    for row in tqdm(csv_reader):
+        load_data(row)
 
 
 

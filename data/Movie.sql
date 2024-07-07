@@ -63,3 +63,24 @@ ALTER TABLE movies_stars ADD FOREIGN KEY (movie_id) REFERENCES movies (id);
 ALTER TABLE movies_directors ADD FOREIGN KEY (directors_id) REFERENCES directors (id);
 
 ALTER TABLE movies_directors ADD FOREIGN KEY (movie_id) REFERENCES movies (id);
+
+create view movie_gross (id, name, rating, start_year, end_year, gross) as 
+select
+  m.id,
+	name,
+	rating,
+	start_year,
+	end_year,
+  gross
+from movies m 
+join movies_analytics ma on ma.movie_id = m.id
+where gross is not null;
+
+create view film (id, name, rating, release_year) as
+select
+  m.id,
+  name,
+  rating,
+  end_year
+from movies m
+where start_year is null;
