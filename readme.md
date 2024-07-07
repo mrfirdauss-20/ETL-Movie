@@ -71,7 +71,7 @@ select
     concat('$',coalesce(sum(gross), 0),'M') as "Total Gross"
 from movie_gross m
 join movies_directors on m.id = movies_directors.movie_id
-join directors d on d.id = movies_directors.directors_id
+join directors d on d.id = movies_directors.director_id
 where start_year is null 
 group by 1
 
@@ -95,7 +95,7 @@ select
     rating as "Rating"
 from film m
 join movies_directors on m.id = movies_directors.movie_id
-join directors d on d.id = movies_directors.directors_id
+join directors d on d.id = movies_directors.director_id
 join movies_stars on m.id = movies_stars.movie_id
 join stars on stars.id = movies_stars.star_id
 where d.name = 'Martin Scorsese' and stars.name = 'Robert De Niro'
