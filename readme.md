@@ -96,4 +96,10 @@ docker-compose build
 docker-compose up
 ```
 
+## Credit
+This program is belongs to Muhammad Risqi Firdaus
+- [Personal Website](mrfirdauss.vercel.app)
+- [Medium](https://mrfirdauss.medium.com/)
+- [Github](https://github.com/mrfirdauss-20/)
+- [Email](mailto:risqi.firdaus20@gmail.com)
 
