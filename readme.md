@@ -6,7 +6,7 @@ Caption: ERD Database structure for the movie database.
 ![Movie Logical Structure](logical_scheme.png)
 Caption: Class diagram of the database.
 
-For the datawarehouse i conduct star schema.
+> For the datawarehouse I conduct star schema.
 
 > movies table and analytics being seperated because for busienss purpose both have different purpose. While movies contains data that will be shown to users, movies analytics will contains data for business teams.
 
