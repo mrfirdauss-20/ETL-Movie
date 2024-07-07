@@ -1,9 +1,9 @@
 # ETL Movie
 ## Diagram
-![Movie Database Structure](Movie.png)
+![Movie Database Structure](assets/Movie.png)
 Caption: ERD Database structure for the movie database.
 
-![Movie Logical Structure](logical_scheme.png)
+![Movie Logical Structure](assets/logical_scheme.png)
 Caption: Class diagram of the database.
 
 > For the datawarehouse I conduct star schema.

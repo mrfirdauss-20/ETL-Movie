@@ -35,7 +35,7 @@ class Data():
             stars = X[:-1].split(':\n')[1].split(', \n')
         return director, stars
 
-    def insertToDB(self, conn):
+    def insertToDB(self, conn, genreMap, starMap, directorMap, movies_stars, movies_directors, movies_genres, movies_votes, movies_analytics):
         cursor = conn.cursor()
         queryMovie = "INSERT INTO movies (name, run_time, plot, rating, start_year, end_year) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
         cursor.execute(queryMovie, (self.movie, self.run_time, self.one_line, self.rating, self.year_start, self.year_end))
@@ -44,44 +44,40 @@ class Data():
 
         if self.stars:
             for star in self.stars:
-                queryStar = "SELECT id FROM stars WHERE name = %s"
-                cursor.execute(queryStar, (star.strip(),))
-                star_id = cursor.fetchone()
-
-                if (star_id) == None or len(star_id) == 0:
+                star_id = starMap.get(star.strip())
+                if star_id == None:
                     queryStar = "INSERT INTO stars (name) VALUES (%s) RETURNING id"
                     cursor.execute(queryStar, (star.strip(),))
-                    star_id = cursor.fetchone()
-                queryMovieStar = "INSERT INTO movies_stars (movie_id, star_id) VALUES (%s, %s)"
-                cursor.execute(queryMovieStar, (movie_id, star_id[0]))
+                    starMap[star.strip()] = cursor.fetchone()[0]
+                    star_id = starMap[star.strip()]
+                movies_stars.append((movie_id, star_id))
+            # queryMovieStar = "INSERT INTO movies_stars (movie_id, star_id) VALUES (%s, %s)"
+            # cursor.executemany(queryMovieStar, movie_star)
         
         if self.director:
             for director in self.director:
-                queryDirector = "SELECT id FROM directors WHERE name = %s"
-                cursor.execute(queryDirector, (director.strip(),))
-                director_id = cursor.fetchone()
-                if (director_id) == None or len(director_id) == 0:
+                director_id = directorMap.get(director.strip())
+                if director_id == None:
                     queryDirector = "INSERT INTO directors (name) VALUES (%s) RETURNING id"
                     cursor.execute(queryDirector, (director.strip(),))
-                    director_id = cursor.fetchone()
-                queryMovieDirector = "INSERT INTO movies_directors (movie_id, director_id) VALUES (%s, %s)"
-                cursor.execute(queryMovieDirector, (movie_id, director_id[0]))
+                    directorMap[director.strip()] = cursor.fetchone()[0]
+                    director_id = directorMap[director.strip()]
+                movies_directors.append((movie_id, director_id))
+            # queryMovieDirector = "INSERT INTO movies_directors (movie_id, director_id) VALUES (%s, %s)"
+            # cursor.executemany(queryMovieDirector, movie_director)
         
         if self.genre:
             for genre in self.genre:
-                queryGenre = "SELECT id FROM genres WHERE name = %s"
-                cursor.execute(queryGenre, (genre.strip(),))
-                genre_id = cursor.fetchone()
-                if (genre_id) == None or len(genre_id) == 0:
+                genre_id = genreMap.get(genre.strip())
+                if genre_id == None:
                     queryGenre = "INSERT INTO genres (name) VALUES (%s) RETURNING id"
                     cursor.execute(queryGenre, (genre.strip(),))
-                    genre_id = cursor.fetchone()
-                queryMovieGenre = "INSERT INTO movies_genres (movie_id, genre_id) VALUES (%s, %s)"
-                cursor.execute(queryMovieGenre, (movie_id, genre_id[0]))
+                    genreMap[genre.strip()] = cursor.fetchone()[0]
+                    genre_id = genreMap[genre.strip()]
+                movies_genres.append((movie_id, genre_id))
+            # queryMovieGenre = "INSERT INTO movies_genres (movie_id, genre_id) VALUES (%s, %s)"
+            # cursor.executemany(queryMovieGenre, movie_genre)
 
-        queryVote = "INSERT INTO movies_votes (movie_id, vote_count) VALUES (%s, %s)"
-        cursor.execute(queryVote, (movie_id, self.votes))
-
-        queryAnalysis = "INSERT INTO movies_analytics (movie_id, gross) VALUES (%s, %s)"
-        cursor.execute(queryAnalysis, (movie_id, self.gross))
-        conn.commit()
+        movies_votes.append((movie_id, self.votes))
+        movies_analytics.append((movie_id, self.gross))
+        return genreMap, starMap, directorMap, movies_stars, movies_directors, movies_genres, movies_votes, movies_analytics
