@@ -19,6 +19,36 @@ For the datawarehouse i conduct star schema.
 
 
 ## SQL Query
+To help the data query, I made two view:
+- movie_gross
+    <br />contains data for business analytics
+    ```
+    create view movie_gross (id, name, rating, start_year, end_year, gross) as 
+    select
+    m.id,
+        name,
+        rating,
+        start_year,
+        end_year,
+    gross
+    from movies m 
+    join movies_analytics ma on ma.movie_id = m.id
+    where gross is not null;
+    ```
+- film
+    <br /> Contains only movie data, excluding series (start_year == Null)
+    ```
+    create view film (id, name, rating, release_year) as
+    select
+        m.id,
+        name,
+        rating,
+        end_year
+        from movies m
+        where start_year is null;
+    ```
+
+Below the answer of question from the documents.
 ```
 -- 1. Number of unique film titles
 select count(distinct name) from movies where start_year is null;
@@ -69,7 +99,7 @@ join movies_stars on m.id = movies_stars.movie_id
 join stars on stars.id = movies_stars.star_id
 where d.name = 'Martin Scorsese' and stars.name = 'Robert De Niro'
 ```
-Caption: also available in `answer.sql`
+Caption: also available in [`answer.sql`](\answer.sql)
 
 ## How to run
 ### Requirements:
