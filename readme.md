@@ -100,7 +100,7 @@ join movies_stars on m.id = movies_stars.movie_id
 join stars on stars.id = movies_stars.star_id
 where d.name = 'Martin Scorsese' and stars.name = 'Robert De Niro'
 ```
-Caption: also available in [`answer.sql`](\answer.sql)
+Caption: also available in [`answer.sql`](answer.sql)
 
 ## How to run
 ### Requirements:
