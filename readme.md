@@ -69,4 +69,31 @@ join movies_stars on m.id = movies_stars.movie_id
 join stars on stars.id = movies_stars.star_id
 where d.name = 'Martin Scorsese' and stars.name = 'Robert De Niro'
 ```
-Caption: also available in answer.sql
+Caption: also available in `answer.sql`
+
+## How to run
+### Requirements:
+- docker
+
+### Step by Step:
+You will need two terminal opened to run this program.
+#### First terminal
+- move to `\data` directory
+```
+cd data
+```
+- run the db docker
+```
+docker-compose build
+docker-compose up
+```
+- if you want to restart the DB, you should remove the container before re-run the docker
+
+#### Second terminal
+- run docker
+```
+docker-compose build
+docker-compose up
+```
+
+
