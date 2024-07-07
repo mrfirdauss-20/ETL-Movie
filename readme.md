@@ -16,7 +16,8 @@ Caption: Class diagram of the database.
 
 > On going series will have null on end_year.
 
-
+## Tech Stack
+In this problem, I use docker as container so it can be run on any system. To make ETL program, I use python as known for the capability to handle data. I use posgres for the DBMS because it functionality and capability not only for DDL and DML, but also its capability to analyze query, which help me measure the query cost. It used to find the most optimum query for answer.sql.
 
 ## SQL Query
 To help the data query, I made two view:
